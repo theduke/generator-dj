@@ -1,0 +1,62 @@
+<!doctype html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+
+  <!-- Set newest rendering mode on IE. More info: h5bp.com/i/378 -->
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <!-- Mobile viewport optimized: h5bp.com/viewport -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>{% block head_title %}{{ _("HEAD TITLE") }}{% endblock %}</title>
+  <meta name="description" content="{% block meta_description %}{% endblock %}">
+  <meta name="author" content="{% block meta_author %}{% endblock %}">
+
+  {% block css %}
+   <%= baseTplCss %>
+  {% endblock %}
+  {% block js_top %}
+  <%= baseTplJsTop %>
+  {% endblock js_top %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+{% block body %}
+
+  <div id="page">
+    <header id="header">
+      {% include "core/header.html" %}
+    </header>
+
+    <div id="content-wrap" class="container">
+      {% block content_wrap %}
+      <h1>{% block page_title %}{% if page_title %}{{ page_title }}{% endif %}{% endblock %}</h1>
+
+      {% if messages %}
+      <ul class="messages">
+          {% for message in messages %}
+          <li{% if message.tags %} class="alert alert-{{ message.tags }}"{% endif %}>{{ message|safe }}</li>
+          {% endfor %}
+      </ul>
+      {% endif %}
+
+      <div id="content" role="main">
+        {% block content %}{% endblock %}
+      </div>
+      {% endblock %}
+    </div>
+
+    <footer id="footer">
+      {% include "core/footer.html" %}
+    </footer>
+
+  <!-- JavaScript at the bottom for fast page loading -->
+  {% block js_bottom %}
+  <%= baseTplJsBottom %>
+  {% endblock %}
+  <!-- end scripts -->
+{% endblock %}
+</body>
+</html>

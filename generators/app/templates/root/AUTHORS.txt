@@ -1,0 +1,5 @@
+AUTHORS
+=======
+
+This file contains a list of authors with contact information,
+and information on what they have contributed.
