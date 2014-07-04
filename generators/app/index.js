@@ -128,11 +128,17 @@ var DjGenerator = yeoman.generators.Base.extend({
         message: 'Create a new virtualenv?',
         type: 'confirm',
         default: false
+      }, {
+        name: 'git',
+        message: 'Create a new git repository, and do initial commit?',
+        type: 'confirm',
+        default: true
       },
     ];
 
     this.prompt(prompts, function (props) {
       this.createVenv = props.venv;
+      this.createGit = props.git;
       done();
     }.bind(this));
   },
@@ -278,7 +284,7 @@ var DjGenerator = yeoman.generators.Base.extend({
     }
   },
 
-  createVenv: function() {
+  doCreateVenv: function() {
     if (this.createVenv) {
       var path = this.dest._base + '/pyenv';
       var pip_path = path + '/bin/pip';
@@ -286,6 +292,16 @@ var DjGenerator = yeoman.generators.Base.extend({
       this.spawnCommand('virtualenv', ['-p', 'python3', path]);
       //this.spawnCommand('bash', ["-c",  pip_path + ' install -r ' + this.requirementsFile]);
     }
+  },
+
+  doCreateGit: function() {
+    if (this.createGit) 
+      var base = this.dest._base;
+      var gitbase = base + '/.git';
+
+      this.spawnCommand('git', ['--git-dir=' + gitbase , 'init'])
+      this.spawnCommand('git', ['--git-dir=' + gitbase, '--work-tree=' + base, 'add', '--all']);
+      this.spawnCommand('git', ['--git-dir=' + gitbase, '--work-tree=' + base, 'commit', '-m', 'Initial commit.']);
   }
 });
 
