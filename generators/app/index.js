@@ -118,6 +118,25 @@ var DjGenerator = yeoman.generators.Base.extend({
     }.bind(this));
   },
 
+  askForSystem: function() {
+    var done = this.async();
+
+    this.log(yosay('System configuration!'));
+
+    var prompts = [{
+        name: 'venv',
+        message: 'Create a new virtualenv?',
+        type: 'confirm',
+        default: false
+      },
+    ];
+
+    this.prompt(prompts, function (props) {
+      this.createVenv = props.venv;
+      done();
+    }.bind(this));
+  },
+
   app: function () {
     // Copy everything from root directory.
     var root = this.src._base + '/root';
@@ -136,6 +155,7 @@ var DjGenerator = yeoman.generators.Base.extend({
     var baseApp= 'app/apps/' + this.siteName;
     this.baseAppPath = baseApp;
     this.baseSettingsPath = this.baseAppPath + '/settings/base.py';
+    this.requirementsFile = this.dest._base + '/app/requirements/prod.txt';
 
     this.directory('base_app', baseApp);
 
@@ -190,6 +210,10 @@ var DjGenerator = yeoman.generators.Base.extend({
     content = content + conf + '\n\n';
 
     this._fileAppend(this.baseSettingsPath, content);
+  },
+
+  _addPythonRequirement: function(name, version) {
+    this._fileAppend(this.requirementsFile, '\n' + name );
   },
 
   _fileAppend: function(path, newContent) {
@@ -251,6 +275,16 @@ var DjGenerator = yeoman.generators.Base.extend({
       this._addAppConfig('django-debug-toolbar', conf);
       // Add URL config.
       this._fileAppend(this.baseAppPath + '/urls.py', this.read('apps/debug_toolbar/urls.txt'));
+    }
+  },
+
+  createVenv: function() {
+    if (this.createVenv) {
+      var path = this.dest._base + '/pyenv';
+      var pip_path = path + '/bin/pip';
+
+      this.spawnCommand('virtualenv', ['-p', 'python3', path]);
+      //this.spawnCommand('bash', ["-c",  pip_path + ' install -r ' + this.requirementsFile]);
     }
   }
 });
