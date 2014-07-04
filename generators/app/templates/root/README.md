@@ -1,0 +1,4 @@
+<%= siteName %>
+===============
+
+Readme of <%= siteName %>.

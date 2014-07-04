@@ -4,11 +4,11 @@ import sys
 
 if __name__ == "__main__":
     # Make it possible to run from any directory.
-    os.chdir(os.path.dirname(os.path.realpath(__file__)))
+    DIR = os.path.dirname(os.path.realpath(__file__))
 
     # Add apps and lib dir to settings.
-    sys.path.append('apps')
-    sys.path.append('lib')
+    sys.path.append(os.path.join(DIR, 'apps'))
+    sys.path.append(os.path.join(DIR, 'lib'))
     
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "<%= siteName %>.settings")
 

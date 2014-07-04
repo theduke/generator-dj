@@ -12,7 +12,7 @@ urlpatterns = patterns('',
 
     url(r'^admin/', include(admin.site.urls)),
 
-    url(r'^$', '{{ project_name }}.views.home', name='home'),
+    url(r'^$', 'core.views.home', name='home'),
 )
 
 if settings.DEBUG:

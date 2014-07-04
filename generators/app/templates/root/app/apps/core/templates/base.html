@@ -16,10 +16,8 @@
   <meta name="author" content="{% block meta_author %}{% endblock %}">
 
   {% block css %}
-   <%= baseTplCss %>
-  {% endblock %}
+  {% endblock css %}
   {% block js_top %}
-  <%= baseTplJsTop %>
   {% endblock js_top %}
 </head>
 <body class="{% block body_class %}{% endblock %}">
@@ -54,8 +52,7 @@
 
   <!-- JavaScript at the bottom for fast page loading -->
   {% block js_bottom %}
-  <%= baseTplJsBottom %>
-  {% endblock %}
+  {% endblock js_bottom %}
   <!-- end scripts -->
 {% endblock %}
 </body>
