@@ -50,20 +50,7 @@ var DjGenerator = yeoman.generators.Base.extend({
         name: 'projectRepo',
         message: 'Whats the repo GIT clone URL?',
         default: ''
-      }, {
-        name: 'installjQuery',
-        message: 'Install and include jQuery?',
-        type: 'confirm'
-      }, {
-        name: 'installModernizr',
-        message: 'Install and include Modernizr?',
-        type: 'confirm'
-      }, {
-        name: 'installCompassBootstrap',
-        message: 'Install and include Compass + bootstrap-sass? (REQUIRES compass AND bootstrap-sass GEMS!',
-        type: 'confirm',
-        default: false
-      },
+      }
     ];
 
     this.prompt(prompts, function (props) {
@@ -85,6 +72,52 @@ var DjGenerator = yeoman.generators.Base.extend({
 
   },
 
+  askForDeps: function() {
+    var done = this.async();
+
+    this.log(yosay('Select dependencies to install!'));
+
+    var prompts = [{
+        name: 'jquery',
+        message: 'Install and include jQuery?',
+        type: 'confirm'
+      }, {
+        name: 'modernizr',
+        message: 'Install and include Modernizr?',
+        type: 'confirm'
+      }, {
+        name: 'bootstrap_sass',
+        message: 'Install and include Compass + bootstrap-sass? (REQUIRES compass AND bootstrap-sass GEMS!',
+        type: 'confirm',
+        default: false
+      },
+    ];
+
+    this.prompt(prompts, function (props) {
+      this.installDeps = props;
+      done();
+    }.bind(this));
+  },
+
+  askForDjangoModules: function() {
+    var done = this.async();
+
+    this.log(yosay('Select django modules to install!'));
+
+    var prompts = [{
+        name: 'debug_toolbar',
+        message: 'Install django-debug-toolbar?',
+        type: 'confirm',
+        default: true
+      }, 
+    ];
+
+    this.prompt(prompts, function (props) {
+      this.installApps = props;
+      done();
+    }.bind(this));
+  },
+
   app: function () {
     // Copy everything from root directory.
     var root = this.src._base + '/root';
@@ -101,6 +134,9 @@ var DjGenerator = yeoman.generators.Base.extend({
 
     // Copy base app.
     var baseApp= 'app/apps/' + this.siteName;
+    this.baseAppPath = baseApp;
+    this.baseSettingsPath = this.baseAppPath + '/settings/base.py';
+
     this.directory('base_app', baseApp);
 
     // Copy template tags.
@@ -144,7 +180,24 @@ var DjGenerator = yeoman.generators.Base.extend({
     this._tplReplaceBlock(path, 'css', tag);
   },
 
-  installDeps: function () {
+  _addAppConfig: function(name, conf) {
+    // Build a pretty config header.
+    var content = '# ' + name + ' #';
+    var header = new Array(content.length + 1).join('#');
+
+    content = '\n\n' + header + '\n' + content + '\n' + header + '\n\n';
+
+    content = content + conf + '\n\n';
+
+    this._fileAppend(this.baseSettingsPath, content);
+  },
+
+  _fileAppend: function(path, newContent) {
+    var content = this.dest.read(path) + newContent;
+    this.write(path, content);
+  },
+
+  runDepsInstall: function () {
     var bowerDeps = [];
 
     var js_top = "";
@@ -152,11 +205,11 @@ var DjGenerator = yeoman.generators.Base.extend({
     var css = "";
 
 
-    if (this.installjQuery) {
+    if (this.installDeps.jquery) {
       bowerDeps.push('jquery');
       js += '<script type="text/javascript" src="{{ STATIC_URL }}jquery/dist/jquery.js"></script>\n';
     }
-    if (this.installModernizr) {
+    if (this.installDeps.modernizr) {
       bowerDeps.push('modernizr');
       js_top += '<script type="text/javascript" src="{{ STATIC_URL }}modernizr/modernizr.js"></script>\n';
     }
@@ -174,18 +227,31 @@ var DjGenerator = yeoman.generators.Base.extend({
   },
 
   installBootstrap: function() {
-    if (!this.installCompassBootstrap) {
+    if (!this.installDeps.bootstrap_sass) {
       return;
     }
 
     var path = this.dest._base + '/app/public/compass';
     this.spawnCommand('compass', ['create', path, '-r', 'bootstrap-sass', '--using', 'bootstrap'])
-    
+
     this.copy('deps/bootstrap/config.rb', 'app/public/compass/config.rb')
     this.copy('deps/bootstrap/menu.html', 'app/apps/core/templates/core/header.html');
 
     this._baseTplAddJsBottom('js/bootstrap.js');
     this._baseTplAddCss('css/styles.css');
+  },
+
+  runAppsInstalls: function() {
+    var conf = this.installApps;
+    if (conf.debug_toolbar) {
+      var conf = "CONTRIB_APPS += ('debug_toolbar',)\n";
+      conf += 'DEBUG_TOOLBAR_PATCH_SETTINGS = False\n';
+      conf += "MIDDLEWARE_CLASSES = ('debug_toolbar.middleware.DebugToolbarMiddleware',) + MIDDLEWARE_CLASSES\n";
+
+      this._addAppConfig('django-debug-toolbar', conf);
+      // Add URL config.
+      this._fileAppend(this.baseAppPath + '/urls.py', this.read('apps/debug_toolbar/urls.txt'));
+    }
   }
 });
 
